@@ -24,17 +24,18 @@
         <link rel="stylesheet" href="../fonts/fonts.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" href="../highlight.css">
-        <link rel="stylesheet" href="../tomorrow-night.css">
-        <link rel="stylesheet" href="../ayu-highlight.css">
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
 
 
-        <!-- Provide site root to javascript -->
+        <!-- Provide site root and default themes to javascript -->
         <script>
-            var path_to_root = "../";
-            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc.js"></script>
@@ -44,8 +45,8 @@
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
-                var theme = localStorage.getItem('mdbook-theme');
-                var sidebar = localStorage.getItem('mdbook-sidebar');
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
 
                 if (theme.startsWith('"') && theme.endsWith('"')) {
                     localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
@@ -59,7 +60,8 @@
 
         <!-- Set the theme before any content is loaded, prevents flash -->
         <script>
-            var theme;
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
             const html = document.documentElement;
@@ -72,8 +74,8 @@
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
-            var sidebar = null;
-            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
@@ -109,6 +111,7 @@
                             <i class="fa fa-paint-brush"></i>
                         </button>
                         <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
@@ -177,7 +180,7 @@
 </ol>
 <p>There are some situations where it's useful to know which one exactly has been provided.</p>
 <p>For example, let's say we have a function that allows users to perform a "patch" operation on themselves. Let's say our users can optionally have favorite and least favorite numbers, and the input for that might look like this:</p>
-<pre><pre class="playground"><code class="language-rust edition2021">/// Updates user attributes. Fields that are [`None`] are left as-is.
+<pre><pre class="playground"><code class="language-rust edition2024">/// Updates user attributes. Fields that are [`None`] are left as-is.
 struct UserPatch {
     /// If [`Some`], updates the user's favorite number.
     favorite_number: Option&lt;Option&lt;i32&gt;&gt;,
@@ -198,8 +201,8 @@ struct UserPatch {
 </code></pre>
 <p>The last two cases rely on being able to distinguish between <a href="https://spec.graphql.org/October2021#sel-EAFdRDHAAEJDAoBxzT">explicit and implicit <code>null</code></a>.</p>
 <p>Unfortunately, plain <code>Option</code> is not capable to distinguish them. That's why in <a href="https://docs.rs/juniper">Juniper</a>, this can be done using the <a href="https://docs.rs/juniper/0.16.1/juniper/enum.Nullable.html"><code>Nullable</code></a> type:</p>
-<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">extern crate juniper;
-</span>use juniper::{graphql_object, FieldResult, GraphQLInputObject, Nullable};
+<pre><pre class="playground"><code class="language-rust edition2024"><span class="boring">extern crate juniper;
+</span>use juniper::{FieldResult, GraphQLInputObject, Nullable, graphql_object};
 
 #[derive(GraphQLInputObject)]
 struct UserPatchInput {

@@ -24,17 +24,18 @@
         <link rel="stylesheet" href="../../fonts/fonts.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" href="../../highlight.css">
-        <link rel="stylesheet" href="../../tomorrow-night.css">
-        <link rel="stylesheet" href="../../ayu-highlight.css">
+        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
 
 
-        <!-- Provide site root to javascript -->
+        <!-- Provide site root and default themes to javascript -->
         <script>
-            var path_to_root = "../../";
-            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+            const path_to_root = "../../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc.js"></script>
@@ -44,8 +45,8 @@
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
-                var theme = localStorage.getItem('mdbook-theme');
-                var sidebar = localStorage.getItem('mdbook-sidebar');
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
 
                 if (theme.startsWith('"') && theme.endsWith('"')) {
                     localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
@@ -59,7 +60,8 @@
 
         <!-- Set the theme before any content is loaded, prevents flash -->
         <script>
-            var theme;
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
             const html = document.documentElement;
@@ -72,8 +74,8 @@
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
-            var sidebar = null;
-            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
@@ -109,6 +111,7 @@
                             <i class="fa fa-paint-brush"></i>
                         </button>
                         <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
@@ -164,7 +167,7 @@
 </ol>
 <h2 id="trivial"><a class="header" href="#trivial">Trivial</a></h2>
 <p>While any type in <a href="https://www.rust-lang.org">Rust</a> can be exposed as a <a href="https://spec.graphql.org/October2021#sec-Objects">GraphQL object</a>, the most common one is a <a href="https://doc.rust-lang.org/reference/items/structs.html">struct</a>:</p>
-<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">extern crate juniper;
+<pre><pre class="playground"><code class="language-rust edition2024"><span class="boring">extern crate juniper;
 </span><span class="boring">use juniper::GraphQLObject;
 </span><span class="boring">
 </span>#[derive(GraphQLObject)]
@@ -180,7 +183,7 @@ struct Person {
 </blockquote>
 <h3 id="documentation"><a class="header" href="#documentation">Documentation</a></h3>
 <p>We should take advantage of the fact that <a href="https://graphql.org">GraphQL</a> is <a href="https://spec.graphql.org/October2021#sec-Introspection">self-documenting</a> and add descriptions to the defined <a href="https://spec.graphql.org/October2021#sec-Objects">GraphQL object</a> type and its fields. <a href="https://docs.rs/juniper">Juniper</a> will automatically use associated <a href="https://doc.rust-lang.org/reference/comments.html#doc-comments">Rust doc comments</a> as <a href="https://spec.graphql.org/October2021#sec-Descriptions">GraphQL descriptions</a>:</p>
-<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">extern crate juniper;
+<pre><pre class="playground"><code class="language-rust edition2024"><span class="boring">extern crate juniper;
 </span><span class="boring">use juniper::GraphQLObject;
 </span><span class="boring">
 </span>/// Information about a person.
@@ -195,7 +198,7 @@ struct Person {
 <span class="boring">
 </span><span class="boring">fn main() {}</span></code></pre></pre>
 <p>If using <a href="https://doc.rust-lang.org/reference/comments.html#doc-comments">Rust doc comments</a> is not desired (for example, when we want to keep <a href="https://www.rust-lang.org">Rust</a> API docs and GraphQL schema descriptions different), the <code>#[graphql(description = "...")]</code> attribute can be used instead, which takes precedence over <a href="https://doc.rust-lang.org/reference/comments.html#doc-comments">Rust doc comments</a>:</p>
-<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">extern crate juniper;
+<pre><pre class="playground"><code class="language-rust edition2024"><span class="boring">extern crate juniper;
 </span><span class="boring">use juniper::GraphQLObject;
 </span><span class="boring">
 </span>/// This doc comment is visible only in Rust API docs.
@@ -215,7 +218,7 @@ struct Person {
 </span><span class="boring">fn main() {}</span></code></pre></pre>
 <h3 id="renaming"><a class="header" href="#renaming">Renaming</a></h3>
 <p>By default, <a href="https://doc.rust-lang.org/reference/items/structs.html">struct</a> fields are converted from <a href="https://www.rust-lang.org">Rust</a>'s standard <code>snake_case</code> naming convention into <a href="https://graphql.org">GraphQL</a>'s <code>camelCase</code> convention:</p>
-<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">extern crate juniper;
+<pre><pre class="playground"><code class="language-rust edition2024"><span class="boring">extern crate juniper;
 </span><span class="boring">use juniper::GraphQLObject;
 </span><span class="boring">
 </span>#[derive(GraphQLObject)]
@@ -226,7 +229,7 @@ struct Person {
 <span class="boring">
 </span><span class="boring">fn main() {}</span></code></pre></pre>
 <p>We can override the name by using the <code>#[graphql(name = "...")]</code> attribute:</p>
-<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">extern crate juniper;
+<pre><pre class="playground"><code class="language-rust edition2024"><span class="boring">extern crate juniper;
 </span><span class="boring">use juniper::GraphQLObject;
 </span><span class="boring">
 </span>#[derive(GraphQLObject)]
@@ -240,7 +243,7 @@ struct Person {
 <span class="boring">
 </span><span class="boring">fn main() {}</span></code></pre></pre>
 <p>Or provide a different renaming policy for all the <a href="https://doc.rust-lang.org/reference/items/structs.html">struct</a> fields:</p>
-<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">extern crate juniper;
+<pre><pre class="playground"><code class="language-rust edition2024"><span class="boring">extern crate juniper;
 </span><span class="boring">use juniper::GraphQLObject;
 </span><span class="boring">
 </span>#[derive(GraphQLObject)]
@@ -257,7 +260,7 @@ struct Person {
 </blockquote>
 <h3 id="deprecation"><a class="header" href="#deprecation">Deprecation</a></h3>
 <p>To <a href="https://spec.graphql.org/October2021#sec--deprecated">deprecate</a> a <a href="https://spec.graphql.org/October2021#sec-Objects">GraphQL object</a> field, either the <code>#[graphql(deprecated = "...")]</code> attribute, or <a href="https://doc.rust-lang.org/reference/attributes/diagnostics.html#the-deprecated-attribute">Rust's <code>#[deprecated]</code> attribute</a>, should be used:</p>
-<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">extern crate juniper;
+<pre><pre class="playground"><code class="language-rust edition2024"><span class="boring">extern crate juniper;
 </span><span class="boring">use juniper::GraphQLObject;
 </span><span class="boring">
 </span>#[derive(GraphQLObject)]
@@ -276,7 +279,7 @@ struct Person {
 </blockquote>
 <h3 id="ignoring"><a class="header" href="#ignoring">Ignoring</a></h3>
 <p>By default, all <a href="https://doc.rust-lang.org/reference/items/structs.html">struct</a> fields are included into the generated <a href="https://spec.graphql.org/October2021#sec-Objects">GraphQL object</a> type. To prevent inclusion of a specific field annotate it with the <code>#[graphql(ignore)]</code> attribute:</p>
-<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(dead_code)]
+<pre><pre class="playground"><code class="language-rust edition2024"><span class="boring">#![expect(dead_code, reason = "example")]
 </span><span class="boring">extern crate juniper;
 </span><span class="boring">use juniper::GraphQLObject;
 </span><span class="boring">
@@ -298,7 +301,7 @@ struct Person {
 <h2 id="relationships"><a class="header" href="#relationships">Relationships</a></h2>
 <p><a href="https://spec.graphql.org/October2021#sec-Objects">GraphQL object</a> fields can be of any <a href="https://graphql.org">GraphQL</a> type, except <a href="https://spec.graphql.org/October2021#sec-Input-Objects">input objects</a>.</p>
 <p>Let's see what it means to build relationships between <a href="https://spec.graphql.org/October2021#sec-Objects">objects</a>:</p>
-<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">extern crate juniper;
+<pre><pre class="playground"><code class="language-rust edition2024"><span class="boring">extern crate juniper;
 </span><span class="boring">use juniper::GraphQLObject;
 </span><span class="boring">
 </span>#[derive(GraphQLObject)]

@@ -24,17 +24,18 @@
         <link rel="stylesheet" href="fonts/fonts.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" href="highlight.css">
-        <link rel="stylesheet" href="tomorrow-night.css">
-        <link rel="stylesheet" href="ayu-highlight.css">
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
 
 
-        <!-- Provide site root to javascript -->
+        <!-- Provide site root and default themes to javascript -->
         <script>
-            var path_to_root = "";
-            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc.js"></script>
@@ -44,8 +45,8 @@
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
-                var theme = localStorage.getItem('mdbook-theme');
-                var sidebar = localStorage.getItem('mdbook-sidebar');
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
 
                 if (theme.startsWith('"') && theme.endsWith('"')) {
                     localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
@@ -59,7 +60,8 @@
 
         <!-- Set the theme before any content is loaded, prevents flash -->
         <script>
-            var theme;
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
             const html = document.documentElement;
@@ -72,8 +74,8 @@
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
-            var sidebar = null;
-            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
@@ -109,6 +111,7 @@
                             <i class="fa fa-paint-brush"></i>
                         </button>
                         <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
@@ -165,14 +168,14 @@ juniper = "0.16.1"
 <h2 id="schema"><a class="header" href="#schema">Schema</a></h2>
 <p>Exposing simple enums and structs as <a href="https://graphql.org">GraphQL</a> types is just a matter of adding a custom <a href="https://doc.rust-lang.org/stable/reference/attributes/derive.html#derive">derive attribute</a> to them. <a href="https://docs.rs/juniper">Juniper</a> includes support for basic <a href="https://www.rust-lang.org">Rust</a> types that naturally map to <a href="https://graphql.org">GraphQL</a> features, such as <code>Option&lt;T&gt;</code>, <code>Vec&lt;T&gt;</code>, <code>Box&lt;T&gt;</code>, <code>Arc&lt;T&gt;</code>, <code>String</code>, <code>f64</code>, <code>i32</code>, references, slices and arrays.</p>
 <p>For more advanced mappings, <a href="https://docs.rs/juniper">Juniper</a> provides multiple macros to map your <a href="https://www.rust-lang.org">Rust</a> types to a <a href="https://graphql.org/learn/schema">GraphQL schema</a>. The most important one is the <a href="https://docs.rs/juniper/0.16.1/juniper/macro.graphql_object.html"><code>#[graphql_object]</code> attribute</a> that is used for declaring a <a href="https://spec.graphql.org/October2021#sec-Objects">GraphQL object</a> with resolvers (typically used for declaring <a href="https://spec.graphql.org/October2021#sec-Root-Operation-Types"><code>Query</code> and <code>Mutation</code> roots</a>).</p>
-<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring"># ![allow(unused_variables)]
+<pre><pre class="playground"><code class="language-rust edition2024"><span class="boring">#![expect(unused_variables, reason = "example")]
 </span><span class="boring">extern crate juniper;
 </span><span class="boring">
 </span><span class="boring">use std::fmt::Display;
 </span><span class="boring">
 </span>use juniper::{
-    graphql_object, EmptySubscription, FieldResult, GraphQLEnum,
-    GraphQLInputObject, GraphQLObject, ScalarValue,
+    EmptySubscription, FieldResult, GraphQLEnum, GraphQLInputObject, 
+    GraphQLObject, ScalarValue, graphql_object,
 };
 <span class="boring">
 </span><span class="boring">struct DatabasePool;
@@ -287,11 +290,11 @@ type Schema = juniper::RootNode&lt;'static, Query, Mutation, EmptySubscription&l
 <p>To actually serve the <a href="https://graphql.org/learn/schema">schema</a>, see the guides for our various <a href="serve/index.html">server integrations</a>.</p>
 <h2 id="execution"><a class="header" href="#execution">Execution</a></h2>
 <p><a href="https://docs.rs/juniper">Juniper</a> is a library that can be used in many contexts: it doesn't require a server, nor it has a dependency on a particular transport or serialization format. You can invoke the <code>juniper::execute()</code> directly to get a result for a <a href="https://graphql.org">GraphQL</a> query:</p>
-<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">// Only needed due to 2018 edition because the macro is not accessible.
+<pre><pre class="playground"><code class="language-rust edition2024"><span class="boring">// Only needed due to 2018 edition because the macro is not accessible.
 </span><span class="boring">#[macro_use] extern crate juniper;
 </span>use juniper::{
-    graphql_object, graphql_value, EmptyMutation, EmptySubscription, 
-    GraphQLEnum, Variables, 
+    EmptyMutation, EmptySubscription, GraphQLEnum, Variables,
+    graphql_object, graphql_value,
 };
 
 #[derive(GraphQLEnum, Clone, Copy)]
